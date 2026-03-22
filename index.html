@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>はじめてのアロマ選択診断 | JAKA</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Noto+Serif+JP:wght@300;400;500&family=Noto+Sans+JP:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #f8f4ee;
+  --warm: #f2ece0;
+  --linen: #e6ddd0;
+  --sage: #7a9478;
+  --sage-dark: #4e6b4c;
+  --sage-light: #c2d4bf;
+  --gold: #b8903a;
+  --gold-light: #d4aa5a;
+  --earth: #7a6248;
+  --charcoal: #2a2520;
+  --muted: #7a706a;
+  --white: #fdfbf8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Serif JP', serif;
+  background: var(--cream);
+  color: var(--charcoal);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* 背景装飾 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 10% 10%, rgba(122,148,120,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 90% 80%, rgba(184,144,58,0.07) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ボタニカル装飾SVG */
+.botanical-bg {
+  position: fixed;
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 0;
+}
+.botanical-bg.top-right { top: -40px; right: -40px; width: 320px; }
+.botanical-bg.bottom-left { bottom: -40px; left: -40px; width: 280px; transform: rotate(180deg); }
+
+/* ── ヘッダー ── */
+header {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 60px 20px 40px;
+  border-bottom: 1px solid var(--linen);
+}
+.brand-label {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.4em;
+  color: var(--sage);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  display: block;
+}
+header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 5vw, 46px);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--sage-dark);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+.header-sub {
+  font-family: 'Noto Serif JP', serif;
+  font-size: clamp(13px, 2.5vw, 16px);
+  font-weight: 300;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  margin-bottom: 20px;
+}
+.header-desc {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 2;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.gold-line {
+  width: 40px;
+  height: 1px;
+  background: var(--gold);
+  margin: 20px auto 0;
+  opacity: 0.5;
+}
+
+/* ── メインコンテナ ── */
+main {
+  position: relative;
+  z-index: 10;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+/* ── プログレスバー ── */
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.progress-bar {
+  flex: 1;
+  height: 2px;
+  background: var(--linen);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--sage), var(--gold-light));
+  border-radius: 2px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+.progress-text {
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+/* ── ステップカード ── */
+.step {
+  display: none;
+  animation: fadeUp 0.5s ease both;
+}
+.step.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-label {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: block;
+}
+.step h2 {
+  font-size: clamp(17px, 3.5vw, 22px);
+  font-weight: 400;
+  line-height: 1.7;
+  margin-bottom: 8px;
+  color: var(--charcoal);
+}
+.step-hint {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--muted);
+  margin-bottom: 30px;
+  line-height: 1.8;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+/* ── 選択肢グリッド ── */
+.options-grid {
+  display: grid;
+  gap: 12px;
+}
+.options-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.options-grid.cols-1 { grid-template-columns: 1fr; }
+
+@media (max-width: 480px) {
+  .options-grid.cols-2 { grid-template-columns: 1fr; }
+}
+
+.option-card {
+  background: var(--white);
+  border: 1.5px solid var(--linen);
+  border-radius: 12px;
+  padding: 20px 22px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.option-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(122,148,120,0.04), transparent);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.option-card:hover {
+  border-color: var(--sage-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(78,107,76,0.10);
+}
+.option-card:hover::before { opacity: 1; }
+.option-card.selected {
+  border-color: var(--sage);
+  background: linear-gradient(135deg, rgba(122,148,120,0.07), var(--white));
+  box-shadow: 0 6px 20px rgba(78,107,76,0.14);
+}
+.option-card .emoji {
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.option-card .text-wrap { flex: 1; }
+.option-card .label {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--charcoal);
+  margin-bottom: 4px;
+  letter-spacing: 0.05em;
+}
+.option-card .sublabel {
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--muted);
+  font-family: 'Noto Sans JP', sans-serif;
+  line-height: 1.6;
+}
+.option-check {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--linen);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.option-card.selected .option-check {
+  background: var(--sage);
+  border-color: var(--sage);
+}
+.option-card.selected .option-check::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+}
+
+/* ── ボタン ── */
+.btn-next {
+  margin-top: 28px;
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--sage-dark), var(--sage));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-next:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(78,107,76,0.28);
+}
+.btn-next:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.btn-arrow { font-size: 16px; transition: transform 0.2s; }
+.btn-next:hover .btn-arrow { transform: translateX(4px); }
+
+.btn-back {
+  margin-top: 12px;
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--linen);
+  border-radius: 10px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  transition: all 0.2s;
+}
+.btn-back:hover { border-color: var(--muted); color: var(--charcoal); }
+
+/* ── 結果ページ ── */
+#result {
+  display: none;
+  animation: fadeUp 0.6s ease both;
+}
+#result.active { display: block; }
+
+.result-hero {
+  text-align: center;
+  padding: 30px 0 36px;
+  border-bottom: 1px solid var(--linen);
+  margin-bottom: 32px;
+}
+.result-icon { font-size: 56px; margin-bottom: 16px; display: block; }
+.result-tag {
+  display: inline-block;
+  background: var(--sage-light);
+  color: var(--sage-dark);
+  font-size: 11px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  padding: 5px 16px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+.result-hero h2 {
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 400;
+  color: var(--sage-dark);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.result-sub {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--muted);
+  font-family: 'Noto Sans JP', sans-serif;
+  line-height: 1.9;
+}
+
+/* 推薦アイテム */
+.recommend-section { margin-bottom: 28px; }
+.section-title {
+  font-size: 11px;
+  letter-spacing: 0.35em;
+  color: var(--gold);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 300;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--linen);
+}
+
+.item-card {
+  background: var(--white);
+  border: 1px solid var(--linen);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.item-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--sage-light), rgba(122,148,120,0.2));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.item-body { flex: 1; }
+.item-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--charcoal);
+  margin-bottom: 4px;
+  letter-spacing: 0.05em;
+}
+.item-desc {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--muted);
+  font-family: 'Noto Sans JP', sans-serif;
+  line-height: 1.7;
+}
+.item-tag {
+  display: inline-block;
+  background: rgba(184,144,58,0.10);
+  color: var(--gold);
+  font-size: 10px;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 3px 10px;
+  border-radius: 10px;
+  margin-top: 6px;
+}
+
+/* 使い方カード */
+.usage-card {
+  background: linear-gradient(135deg, rgba(122,148,120,0.05), rgba(184,144,58,0.04));
+  border: 1px solid rgba(122,148,120,0.2);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 28px;
+}
+.usage-card h3 {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sage-dark);
+  margin-bottom: 12px;
+  letter-spacing: 0.1em;
+}
+.usage-steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.usage-steps li {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--charcoal);
+  font-family: 'Noto Sans JP', sans-serif;
+  line-height: 1.7;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.step-num {
+  width: 20px;
+  height: 20px;
+  background: var(--sage);
+  color: white;
+  border-radius: 50%;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* CTAエリア */
+.cta-section {
+  background: linear-gradient(135deg, var(--sage-dark), #3a5438);
+  border-radius: 16px;
+  padding: 32px 28px;
+  text-align: center;
+  color: white;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.cta-section::before {
+  content: '✿';
+  position: absolute;
+  font-size: 120px;
+  opacity: 0.04;
+  right: -20px;
+  top: -20px;
+  line-height: 1;
+}
+.cta-badge {
+  display: inline-block;
+  background: rgba(184,144,58,0.3);
+  border: 1px solid rgba(212,170,90,0.4);
+  color: var(--gold-light);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  padding: 5px 14px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.cta-section h3 {
+  font-size: clamp(16px, 3vw, 20px);
+  font-weight: 400;
+  line-height: 1.6;
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+}
+.cta-section p {
+  font-size: 12px;
+  font-weight: 300;
+  opacity: 0.8;
+  line-height: 1.8;
+  margin-bottom: 22px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.btn-cta-primary {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: 10px;
+  transition: all 0.25s;
+  box-shadow: 0 4px 16px rgba(184,144,58,0.35);
+}
+.btn-cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(184,144,58,0.45);
+}
+.btn-cta-secondary {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  background: transparent;
+  color: rgba(255,255,255,0.75);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 10px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+  letter-spacing: 0.1em;
+}
+.btn-cta-secondary:hover {
+  background: rgba(255,255,255,0.07);
+  color: white;
+}
+
+.btn-retry {
+  width: 100%;
+  padding: 13px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--linen);
+  border-radius: 10px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  transition: all 0.2s;
+  margin-top: 12px;
+}
+.btn-retry:hover { border-color: var(--muted); color: var(--charcoal); }
+
+/* ── ローディング ── */
+.loading-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(248,244,238,0.85);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+}
+.loading-overlay.show { display: flex; }
+.loading-flower {
+  font-size: 36px;
+  animation: spin 2s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.loading-text {
+  font-size: 13px;
+  color: var(--muted);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+}
+
+/* ── フッター ── */
+footer {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 24px;
+  border-top: 1px solid var(--linen);
+}
+footer p {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.15em;
+}
+</style>
+</head>
+<body>
+
+<!-- ボタニカル背景 -->
+<svg class="botanical-bg top-right" viewBox="0 0 200 200" fill="none">
+  <path d="M100 10 Q130 40 120 80 Q110 120 80 140 Q50 160 30 140 Q10 120 20 90 Q30 60 60 40 Z" fill="#4e6b4c"/>
+  <path d="M140 20 Q170 50 160 90 Q150 130 120 150" stroke="#4e6b4c" stroke-width="2" fill="none"/>
+  <circle cx="160" cy="30" r="8" fill="#b8903a" opacity="0.5"/>
+  <circle cx="60" cy="170" r="5" fill="#4e6b4c" opacity="0.4"/>
+</svg>
+<svg class="botanical-bg bottom-left" viewBox="0 0 200 200" fill="none">
+  <path d="M60 10 Q90 40 80 80 Q70 120 40 140 Q10 160 5 130 Q0 100 20 70 Q40 40 60 10 Z" fill="#7a9478"/>
+  <path d="M100 60 Q80 100 60 130 Q40 160 20 170" stroke="#7a9478" stroke-width="2" fill="none"/>
+</svg>
+
+<!-- ローディング -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-flower">✿</div>
+  <p class="loading-text">診断中...</p>
+</div>
+
+<!-- ヘッダー -->
+<header>
+  <span class="brand-label">JAKA — Japan Aroma Career Association</span>
+  <h1>Aroma Selection Guide</h1>
+  <p class="header-sub">はじめてのアロマ　選択診断</p>
+  <p class="header-desc">「何を選べばいいかわからない」<br>その悩み、3つの質問で解決します。</p>
+  <div class="gold-line"></div>
+</header>
+
+<!-- メインコンテンツ -->
+<main>
+
+  <!-- プログレス -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-text" id="progressText">0 / 3</span>
+  </div>
+
+  <!-- ── Step 1: 気分 ── -->
+  <div class="step active" id="step1">
+    <span class="step-label">Step 01 — Mood</span>
+    <h2>今の気分や状態に<br>一番近いのはどれですか？</h2>
+    <p class="step-hint">直感でえらんでOK。正解はありません。</p>
+    <div class="options-grid cols-2">
+      <div class="option-card" onclick="select(this,'mood','relax')" data-value="relax">
+        <span class="emoji">🌙</span>
+        <div class="text-wrap">
+          <p class="label">ほっとしたい</p>
+          <p class="sublabel">疲れた・緊張がとれない</p>
+        </div>
+        <div class="option-check"></div>
+      </div>
+      <div class="option-card" onclick="select(this,'mood','uplift')" data-value="uplift">
+        <span class="emoji">☀️</span>
+        <div class="text-wrap">
+          <p class="label">元気を出したい</p>
+          <p class="sublabel">やる気・気分を上げたい</p>
+        </div>
+        <div class="option-check"></div>
+      </div>
+      <div class="option-card" onclick="select(this,'mood','focus')" data-value="focus">
+        <span class="emoji">🎯</span>
+        <div class="text-wrap">
+          <p class="label">集中したい</p>
+          <p class="sublabel">仕事・勉強・家事に集中</p>
+        </div>
+        <div class="option-check"></div>
+      </div>
+      <div class="option-card" onclick="select(this,'mood','sleep')" data-value="sleep">
+        <span class="emoji">💤</span>
+        <div class="text-wrap">
+          <p class="label">眠りを整えたい</p>
+          <p class="sublabel">なかなか眠れない・浅い</p>
+        </div>
+        <div class="option-check"></div>
+      </div>
+      <div class="option-card" onclick="select(this,'mood','skin')" data-value="skin">
+        <span class="emoji">🌿</span>
+        <div class="text-wrap">
+          <p class="label">体・肌をケアしたい</p>
+          <p class="sublabel">乾燥・むくみ・体のつかれ</p>
+        </div>
+        <div class="option-check"></div>
+      </div>
+      <div class="option-card" onclick="select(this,'mood','space')" data-value="space">
+        <span class="emoji">🏡</span>
+        <div class="text-wrap">
+          <p class="label">空間をととのえたい</p>
+          <p class="sublabel">お部屋を良い香りにしたい</p>
+        </div>
+        <div class="option-check"></div>
+      </div>
+    </div>
+    <button class="btn-next" id="next1" onclick="goStep(2)" disabled>
+      次の質問へ <span class="btn-arrow">→</span>
+    </button>
+  </div>
+
+  <!-- ── Step 2: 香り好み ── -->
+  <div class="step" id="step2">
+    <span class="step-label">Step 02 — Scent</span>
+    <h2>どんな香りが好きですか？</h2>
+    <p class="step-hint">好みに近いものをえらんでください。</p>
+    <div class="options-grid cols-2">
+      <div class="option-card" onclick="select(this,'scent','floral')" data-value="floral">
+        <span class="emoji">🌸</span>
+        <div class="text-wrap">
+          <p class="label">花・やさしい甘さ</p>
+          <p class="sublabel">ローズ・ゼラニウム系</p>
+        </div>
+        <div class="option-check"></div>
+      </div>
+      <div class="option-card" onclick="select(this,'scent','citrus')" data-value="citrus">
+        <span class="emoji">🍋</span>
+        <div class="text-wrap">
+          <p class="label">柑橘・さわやか</p>
+          <p class="sublabel">レモン・オレンジ系</p>
+        </div>
+        <div class="option-check"></div>
+      </div>
+      <div class="option-card" onclick="select(this,'scent','herb')" data-value="herb">
+        <span class="emoji">🌱</span>
+        <div class="text-wrap">
+          <p class="label">ハーブ・スッキリ</p>
+          <p class="sublabel">ラベンダー・ミント系</p>
+        </div>
+        <div class="option-check"></div>
+      </div>
+      <div class="option-card" onclick="select(this,'scent','wood')" data-value="wood">
+        <span class="emoji">🌲</span>
+        <div class="text-wrap">
+          <p class="label">木・落ち着く深み</p>
+          <p class="sublabel">ヒノキ・サンダルウッド系</p>
+        </div>
+        <div class="option-check"></div>
+      </div>
+    </div>
+    <button class="btn-next" id="next2" onclick="goStep(3)" disabled>
+      次の質問へ <span class="btn-arrow">→</span>
+    </button>
+    <button class="btn-back" onclick="goStep(1)">← 前の質問に戻る</button>
+  </div>
+
+  <!-- ── Step 3: 使い方 ── -->
+  <div class="step" id="step3">
+    <span class="step-label">Step 03 — Usage</span>
+    <h2>どんなふうに<br>アロマを取り入れたいですか？</h2>
+    <p class="step-hint">生活スタイルに合うものをどうぞ。</p>
+    <div class="options-grid cols-1">
+      <div class="option-card" onclick="select(this,'usage','diffuser')" data-value="diffuser">
+        <span class="emoji">💨</span>
+        <div class="text-wrap">
+          <p class="label">お部屋で香りを楽しみたい</p>
+          <p class="sublabel">ディフューザーや芳香浴で空間ケア</p>
+        </div>
+        <div class="option-check"></div>
+      </div>
+      <div class="option-card" onclick="select(this,'usage','body')" data-value="body">
+        <span class="emoji">🤲</span>
+        <div class="text-wrap">
+          <p class="label">体に直接使いたい</p>
+          <p class="sublabel">マッサージオイルやスキンケアで</p>
+        </div>
+        <div class="option-check"></div>
+      </div>
+      <div class="option-card" onclick="select(this,'usage','easy')" data-value="easy">
+        <span class="emoji">🎒</span>
+        <div class="text-wrap">
+          <p class="label">手軽に・持ち歩きたい</p>
+          <p class="sublabel">仕事中・外出先でもさっと使える</p>
+        </div>
+       
